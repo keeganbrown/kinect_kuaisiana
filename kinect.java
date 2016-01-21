@@ -2,23 +2,22 @@ import java.nio.*;
 import java.util.*;
 import java.lang.*;
 
-class Kinect {
+class FauxKinect {
 
-  public Kinect (Object sketch) {
+  public FauxKinect (Object sketch) {
     System.out.println(sketch);
   }
 
   public int width = 320;
   public int height = 240;
   private int arrayDepth = this.width*this.height;
-  private float[] floatArr = new float[this.arrayDepth];
-  private FloatBuffer returnBuffer = FloatBuffer.wrap(floatArr);
+  private int[] depthArray = new int[this.arrayDepth];
 
 
   public void initDepth () {
     Random rand = new Random();
     for ( int i = 0; i < this.arrayDepth; i++ ) {
-      floatArr[i] = (float)( (rand.nextFloat()*0.5)-0.25 );
+      depthArray[i] = rand.nextInt(2047);
     }
   }
 
@@ -28,17 +27,24 @@ class Kinect {
 
   private void incrementVertexArray () {
     Random rand = new Random();
-    for ( int i = 0; i < this.floatArr.length; i++ ) {
-      //.this.floatArr[i] += ( (rand.nextFloat()*0.02)-0.01 );
-      if ( Math.abs(this.floatArr[i]) > 3.1 ) {
-        this.floatArr[i] = (float)(this.floatArr[i] * -(0.0001*rand.nextFloat()));
+    for ( int i = 0; i < this.depthArray.length; i++ ) {
+      if ( i % 3 == 0 ) {
+        this.depthArray[i] = (int)(Math.floor( i / this.width ));
+      } else if ( i % 3 == 1 ) {
+        this.depthArray[i] = i % this.width;
+      } else if ( i % 3 == 2 ) {
+        this.depthArray[i] = (int)(this.depthArray[i] + (rand.nextInt(5) - rand.nextInt(5)) );
       }
-      this.floatArr[i] = (float)(this.floatArr[i]*(0.9+(rand.nextFloat()*0.3)));
+      if ( this.depthArray[i] < 0 ) {
+        this.depthArray[i] = 0;
+      } else if ( this.depthArray[i] > 2047 ) {
+        this.depthArray[i] = 2047;
+      }
     }
   }
 
-  public FloatBuffer getDephToWorldPositions() {
+  public int[] getRawDepth() {
     this.incrementVertexArray();
-    return this.returnBuffer;
+    return this.depthArray;
   }
 }
