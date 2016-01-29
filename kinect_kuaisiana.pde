@@ -1,14 +1,9 @@
-// Daniel Shiffman
-// Kinect Point Cloud example
-
-// https://github.com/shiffman/OpenKinect-for-Processing
-// http://shiffman.net/p5/kinect/
-
 import org.openkinect.freenect.*;
 import org.openkinect.processing.*;
 
 // Kinect Library object
 Kinect kinect;
+Spout spout;
 
 // Angle Vars
 float a = 0.0f;
@@ -24,7 +19,7 @@ float[] depthLookUp = new float[2048];
 
 void setup() {
   // Rendering in P3D
-  size(1280, 720, P3D);
+  size(640, 360, P3D);
   kinect = new Kinect(this);
   background(0);
   kinect.initDepth();
@@ -34,6 +29,11 @@ void setup() {
   for (int i = 0; i < depthLookUp.length; i++) {
     depthLookUp[i] = rawDepthToMeters(i);
   }
+ // CREATE A NEW SPOUT OBJECT HERE
+  spout = new Spout();
+
+  // INITIALIZE A SPOUT SENDER HERE
+  spout.initSender("Spout Processing", width, height);
 }
 
 void mouseClicked() {
@@ -56,7 +56,7 @@ void draw() {
   // Get the raw depth as array of integers
   int[] depth = kinect.getRawDepth();
 
-  int skip = 4;
+  int skip = 8;
   int hardLimit = 80000;
   int boxCount = 0;
   float factor = 100;
@@ -88,7 +88,8 @@ void draw() {
       popMatrix();
     }
   }
-
+  
+  spout.sendTexture();
   // Rotate
   a += ad;
 }
@@ -115,3 +116,12 @@ PVector depthToWorld(int x, int y, int depthValue) {
   result.z = (float)(depth);
   return result;
 }
+
+
+
+// over-ride exit to release sharing
+void exit() {
+  // CLOSE THE SPOUT SENDER HERE
+  spout.closeSender();
+  super.exit();
+} 
